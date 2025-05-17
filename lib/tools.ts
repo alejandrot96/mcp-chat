@@ -64,7 +64,7 @@ export const getTools = async () => {
     const closeClients = await Promise.all(
       Object.entries(mcpToolsJson.mcpServers).map(
         async ([serverName, server]) => {
-          console.log("SERVER", server);
+          // console.log("SERVER", server);
           const mcpClient = await createMCPClient({
             transport: new StdioMCPTransport(server),
           });

@@ -44,3 +44,5 @@ data/
 mcptools.json
 ignore/
 tmp/.cache/llm_calls.json
+
+**/.claude/settings.local.json

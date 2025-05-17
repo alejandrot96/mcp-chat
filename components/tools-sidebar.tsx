@@ -17,8 +17,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function ToolsSidebar() {
+interface ToolsSidebarProps {
+  className?: string;
+  onClose?: () => void;
+  isMobile?: boolean;
+}
+
+export function ToolsSidebar({ className, onClose, isMobile = false }: ToolsSidebarProps) {
   const tools = useAtomValue(toolsAtom);
   const isLoading = useAtomValue(isMcpLoadingAtom);
   const error = useAtomValue(errorAtom);
@@ -32,21 +41,32 @@ export function ToolsSidebar() {
   }, [reloadTools, setReloadTools]);
 
   return (
-    <div className="w-64 border-l flex flex-col h-full bg-sidebar-background dark:bg-sidebar-background">
-      <div className="p-4 border-b flex gap-2 items-center">
+    <div className={cn(
+      "border-l flex flex-col h-full bg-card dark:bg-card shadow-md",
+      isMobile ? "w-full max-w-xs" : "w-64",
+      className
+    )}>
+      <div className="p-4 border-b flex justify-between items-center bg-card dark:bg-card">
         <h2 className="text-lg font-semibold">Available Tools</h2>
-        <a
-          className="text-sm text-muted-foreground hover:text-foreground cursor-pointer"
-          onClick={async () => {
-            mcpClient.deleteTools();
-            await fetch("/api/tools", { method: "DELETE" });
-            setReloadTools(true);
-          }}
-        >
-          (Reset)
-        </a>
+        <div className="flex items-center gap-2">
+          <a
+            className="text-sm text-muted-foreground hover:text-foreground cursor-pointer"
+            onClick={async () => {
+              mcpClient.deleteTools();
+              await fetch("/api/tools", { method: "DELETE" });
+              setReloadTools(true);
+            }}
+          >
+            (Reset)
+          </a>
+          {isMobile && onClose && (
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onClose} aria-label="Close tools panel">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-y-auto bg-card dark:bg-card">
         <Accordion type="single" collapsible className="w-full">
           {isLoading ? (
             <div className="p-4 text-sm text-muted-foreground">
@@ -54,12 +74,10 @@ export function ToolsSidebar() {
             </div>
           ) : error ? (
             <div className="p-4 text-sm text-red-500">{error}</div>
-          ) : (
-            tools &&
-            tools.breakdown &&
+          ) : tools && tools.breakdown && Object.keys(tools.breakdown).length > 0 ? (
             Object.entries(tools.breakdown).map(([server, tools]) => (
               <AccordionItem key={server} value={server}>
-                <div className="p-4 border-b last:border-b-0 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <div className="p-4 border-b last:border-b-0 hover:bg-muted dark:hover:bg-muted">
                   <AccordionTrigger>{server}</AccordionTrigger>
                   <AccordionContent>
                     <div className="flex flex-col gap-4">
@@ -76,6 +94,10 @@ export function ToolsSidebar() {
                 </div>
               </AccordionItem>
             ))
+          ) : (
+            <div className="p-4 text-sm text-muted-foreground">
+              No tools available. Configure MCP to add tools.
+            </div>
           )}
         </Accordion>
       </div>

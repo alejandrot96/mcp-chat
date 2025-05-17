@@ -81,7 +81,9 @@ export function ToolCall({ toolInvocation }: ToolCallProps) {
                 {hasExplicitErrorState ? "Error Details" : "Result"}
               </h4>
               <pre className="text-xs bg-muted/50 p-2 rounded overflow-x-auto">
-                {JSON.stringify(toolInvocation.result, null, 2)}
+                {typeof toolInvocation.result === 'string' 
+                  ? toolInvocation.result.replace(/\n{3,}/g, '\n\n')
+                  : JSON.stringify(toolInvocation.result, null, 2)}
               </pre>
             </div>
           )}

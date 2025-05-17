@@ -173,7 +173,7 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
 
-    console.log("DATA", data);
+    // console.log("DATA", data);
 
     // Validate that we received valid JSON data
     if (!data || typeof data !== "object") {
@@ -189,7 +189,7 @@ export async function POST(request: Request) {
     try {
       existingTools = await getExistingTools();
     } catch {
-      console.log("MCP tools file doesn't exist, creating it");
+      // console.log("MCP tools file doesn't exist, creating it");
       await writeFile(MCP_TOOLS_FILEPATH, "{}");
     }
 
@@ -203,7 +203,7 @@ export async function POST(request: Request) {
       null,
       2
     );
-    console.log("WITH API", process.env.BROWSERBASE_API_KEY, writing);
+    // console.log("WITH API", process.env.BROWSERBASE_API_KEY, writing);
     await writeFile(MCP_TOOLS_FILEPATH, writing);
 
     return NextResponse.json(

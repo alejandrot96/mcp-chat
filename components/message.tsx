@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
-import { User, Bot } from "lucide-react";
+import { User } from "lucide-react";
 import { MemoizedMarkdown } from "./memoized-markdown";
 import Image from "next/image";
 import {
@@ -13,6 +13,15 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Commit } from "@/services/gitchat/client";
 import { Message } from "ai";
+
+// Utility function to clean up tool results by removing excessive newlines
+function cleanToolResult(result: unknown): string {
+  if (typeof result === 'string') {
+    // Replace multiple consecutive newlines with a single one
+    return result.replace(/\n{3,}/g, '\n\n');
+  }
+  return JSON.stringify(result, null, 2);
+}
 
 export function ChatMessage({
   commit,
@@ -47,14 +56,28 @@ export function ChatMessage({
     <div className={cn("flex items-start gap-3", isUser && "flex-row-reverse")}>
       <Avatar
         className={cn(
-          "h-8 w-8 mt-0.5 flex items-center justify-center",
-          isUser ? "bg-primary" : "bg-muted"
+          "h-10 w-10 mt-0.5 flex items-center justify-center shadow-xl",
+          isUser ? "bg-primary" : "dark:bg-muted bg-white"
         )}
       >
         {isUser ? (
-          <User className="h-5 w-5 text-primary-foreground" />
-        ) : (
-          <Bot className="h-5 w-5" />
+          <User className="h-6 w-6 text-primary-foreground" />
+        ) : (<>
+          <Image
+            src="/ai.dark.svg"
+            width={32}
+            height={32}
+            className="h-8 w-8 dark:block hidden"
+            alt="AI icon dark"
+          />
+          <Image
+            src="/ai.light.svg"
+            width={32}
+            height={32}
+            className="h-8 w-8 dark:hidden block"
+            alt="AI icon light"
+          />
+          </>
         )}
       </Avatar>
 
@@ -64,8 +87,9 @@ export function ChatMessage({
           isUser ? "bg-primary text-primary-foreground" : "bg-muted"
         )}
       >
+        {/* Token counter removed from individual messages */}
         {isUser ? (
-          <div className="whitespace-pre-wrap">{message.content}</div>
+          <div className="whitespace-pre-wrap font-sans">{message.content}</div>
         ) : (
           messageParts.map((part, index) => {
             if (part.type === "tool-invocation" && part.toolInvocation) {
@@ -144,11 +168,7 @@ export function ChatMessage({
                                     </div>
                                   ) : (
                                     <pre className="ml-2 bg-muted p-2 rounded text-muted-foreground overflow-x-auto text-xs whitespace-pre-wrap max-w-full">
-                                      {JSON.stringify(
-                                        part.toolInvocation.result,
-                                        null,
-                                        2
-                                      )}
+                                      {cleanToolResult(part.toolInvocation.result)}
                                     </pre>
                                   )}
                                 </>

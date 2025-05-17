@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
-import { Bot } from "lucide-react";
+import Image from "next/image";
 
 interface LoadingMessageProps {
   message?: string;
@@ -11,11 +11,24 @@ export function LoadingMessage({ message }: LoadingMessageProps) {
     <div className={cn("flex items-start gap-3")}>
       <Avatar
         className={cn(
-          "h-8 w-8 mt-0.5 flex items-center justify-center",
+          "h-10 w-10 mt-0.5 flex items-center justify-center",
           "bg-muted"
         )}
       >
-        <Bot className="h-5 w-5" />
+        <Image
+          src="/ai.dark.svg"
+          width={32}
+          height={32}
+          className="h-8 w-8 dark:block hidden"
+          alt="AI icon dark"
+        />
+        <Image
+          src="/ai.light.svg"
+          width={32}
+          height={32}
+          className="h-8 w-8 dark:hidden block"
+          alt="AI icon light"
+        />
       </Avatar>
 
       <div

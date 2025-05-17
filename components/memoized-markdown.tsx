@@ -12,7 +12,7 @@ function parseMarkdownIntoBlocks(markdown: string): string[] {
 
 const MemoizedMarkdownBlock = memo(
   ({ content }: { content: string }) => {
-    return <ReactMarkdown>{content}</ReactMarkdown>;
+    return <div className="font-sans"><ReactMarkdown>{content}</ReactMarkdown></div>;
   },
   (prevProps, nextProps) => {
     if (prevProps.content !== nextProps.content) return false;
@@ -27,7 +27,9 @@ export const MemoizedMarkdown = memo(
     const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content]);
 
     return blocks.map((block, index) => (
-      <MemoizedMarkdownBlock content={block} key={`${id}-block_${index}`} />
+      <div className="font-content" key={`${id}-block_${index}`}>
+        <MemoizedMarkdownBlock content={block} />
+      </div>
     ));
   }
 );
