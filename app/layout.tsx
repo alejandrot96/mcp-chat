@@ -1,15 +1,34 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import localFont from 'next/font/local';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const apfelGrotezk = localFont({
+  src: [
+    {
+      path: '../public/font/ApfelGrotezk-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../public/font/ApfelGrotezk-Mittel.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../public/font/ApfelGrotezk-Fett.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-apfel-grotezk',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const serverMono = localFont({
+  src: '../public/font/ServerMono-Regular.woff2',
+  variable: '--font-server-mono',
 });
 
 export const metadata: Metadata = {
@@ -23,11 +42,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${apfelGrotezk.variable} ${serverMono.variable} antialiased font-mono`}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider>
+            <div className="absolute top-4 right-4 z-50">
+              <ThemeToggle />
+            </div>
+            {children}
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

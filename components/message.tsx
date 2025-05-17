@@ -65,7 +65,7 @@ export function ChatMessage({
         )}
       >
         {isUser ? (
-          <div className="whitespace-pre-wrap">{message.content}</div>
+          <div className="whitespace-pre-wrap font-sans">{message.content}</div>
         ) : (
           messageParts.map((part, index) => {
             if (part.type === "tool-invocation" && part.toolInvocation) {
