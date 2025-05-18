@@ -437,7 +437,7 @@ export default function ChatPage() {
       // Process key event
 
       // Clear the chat (start a new thread)
-      if (event.key === "c") {
+      if (event.key === "n") {
         event.preventDefault();
         chatRef.current?.clearCommits();
       }
