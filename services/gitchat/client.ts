@@ -13,6 +13,13 @@ import { GitChatClient } from ".";
 export type Commit = ICommit & {
   metadata: {
     message: Message;
+    usage?: {
+      prompt_tokens?: number;
+      completion_tokens?: number;
+      total_tokens?: number;
+      input_tokens?: number;
+      output_tokens?: number;
+    };
   };
 };
 

@@ -16,6 +16,11 @@ export const ROOT_COMMIT: Commit = {
       content: "Initial commit",
       id: "ROOT_COMMIT",
     },
+    usage: {
+      prompt_tokens: 0,
+      completion_tokens: 0,
+      total_tokens: 0
+    }
   },
 };
 

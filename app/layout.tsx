@@ -1,34 +1,36 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import localFont from 'next/font/local';
 
-const apfelGrotezk = localFont({
+const alphaFont = localFont({
   src: [
     {
-      path: '../public/font/ApfelGrotezk-Regular.woff2',
+      path: '../public/font/Alpha Lyrae Medium.woff2',
       weight: '400',
       style: 'normal',
     },
     {
-      path: '../public/font/ApfelGrotezk-Mittel.woff2',
-      weight: '500',
-      style: 'normal',
-    },
-    {
-      path: '../public/font/ApfelGrotezk-Fett.woff2',
-      weight: '700',
+      path: '../public/font/Alpha Lyrae Medium.woff',
+      weight: '400',
       style: 'normal',
     },
   ],
-  variable: '--font-apfel-grotezk',
+  variable: '--font-sans',
+  display: 'swap',
 });
 
-const serverMono = localFont({
-  src: '../public/font/ServerMono-Regular.woff2',
-  variable: '--font-server-mono',
+const n27Font = localFont({
+  src: [
+    {
+      path: '../public/font/n27-regular-webfont.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-mono',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -44,18 +46,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${apfelGrotezk.variable} ${serverMono.variable} antialiased font-mono`}
+        className={`${alphaFont.variable} ${n27Font.variable} antialiased font-sans`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
           disableTransitionOnChange
         >
           <TooltipProvider>
-            <div className="absolute top-4 right-4 z-50">
-              <ThemeToggle />
-            </div>
             {children}
           </TooltipProvider>
         </ThemeProvider>

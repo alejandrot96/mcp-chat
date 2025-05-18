@@ -14,6 +14,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Commit } from "@/services/gitchat/client";
 import { Message } from "ai";
 
+// Utility function to clean up tool results by removing excessive newlines
+function cleanToolResult(result: unknown): string {
+  if (typeof result === 'string') {
+    // Replace multiple consecutive newlines with a single one
+    return result.replace(/\n{3,}/g, '\n\n');
+  }
+  return JSON.stringify(result, null, 2);
+}
+
 export function ChatMessage({
   commit,
   messageProp,
@@ -64,6 +73,7 @@ export function ChatMessage({
           isUser ? "bg-primary text-primary-foreground" : "bg-muted"
         )}
       >
+        {/* Token counter removed from individual messages */}
         {isUser ? (
           <div className="whitespace-pre-wrap font-sans">{message.content}</div>
         ) : (
@@ -144,11 +154,7 @@ export function ChatMessage({
                                     </div>
                                   ) : (
                                     <pre className="ml-2 bg-muted p-2 rounded text-muted-foreground overflow-x-auto text-xs whitespace-pre-wrap max-w-full">
-                                      {JSON.stringify(
-                                        part.toolInvocation.result,
-                                        null,
-                                        2
-                                      )}
+                                      {cleanToolResult(part.toolInvocation.result)}
                                     </pre>
                                   )}
                                 </>

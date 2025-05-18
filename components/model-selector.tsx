@@ -22,10 +22,10 @@ const formatModelName = (model: string): string => {
   const parts = model.split('/');
   if (parts.length >= 2) {
     const provider = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-    const modelName = parts[1].split('-').map(part => 
+    const modelName = parts[1].split('-').map(part =>
       part.charAt(0).toUpperCase() + part.slice(1)
     ).join(' ');
-    
+
     // Create shorter display names for UI
     if (provider === "Google" && modelName.includes("Gemini")) {
       return `${provider} Gemini`;
@@ -34,7 +34,7 @@ const formatModelName = (model: string): string => {
     } else if (provider === "Openai" && modelName.includes("Gpt")) {
       return `${provider} GPT-4`;
     }
-    
+
     return `${provider} ${modelName}`;
   }
   return model;
@@ -58,7 +58,7 @@ export const ModelSelector: FC<ModelSelectorProps> = ({ className }) => {
 
   return (
     <div className="flex flex-col space-y-1">
-      <label htmlFor="model-select" className="text-xs text-muted-foreground font-mono">Model:</label>
+      <label htmlFor="model-select" className="text-xs text-muted-foreground font-mono hidden">Model:</label>
       <Select value={modelName} onValueChange={handleModelChange}>
         <SelectTrigger id="model-select" className={`w-[260px] font-mono text-xs flex items-center ${className}`}>
           <Cpu className="mr-2 h-3.5 w-3.5" />
