@@ -9,8 +9,8 @@ export async function POST(req: Request) {
 
   const { tools, breakdown, closeClients } = await getTools();
 
-  console.log("TOOLS", tools);
-  console.log("BREAKDOWN", breakdown);
+  // console.log("TOOLS", tools);
+  // console.log("BREAKDOWN", breakdown);
 
   const result = streamText({
     model: resolveModel(pendingMessageConfig.modelName),
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
            b) Connect them to existing projects, team members and user history using relations
            c) Store project status updates, progress and user interaction patterns as observations
            d) Update user preferences, common requests and behavioral patterns`,
-    messages: conversationMessages,
+    messages: messages,
     maxSteps: 10,
     temperature: 0.7, // Add some creativity but maintain conversation coherence
     abortSignal: req.signal,

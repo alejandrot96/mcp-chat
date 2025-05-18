@@ -91,7 +91,7 @@ class MCPClient {
         body: JSON.stringify(this.serverConfig),
       });
       const data = await response.json();
-      console.log("Tools saved:", data);
+      // console.log("Tools saved:", data);
     } catch (error) {
       console.error("Error saving tools:", error);
       throw error;
