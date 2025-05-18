@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
-import { User, Bot } from "lucide-react";
+import { User } from "lucide-react";
 import { MemoizedMarkdown } from "./memoized-markdown";
 import Image from "next/image";
 import {
@@ -56,14 +56,28 @@ export function ChatMessage({
     <div className={cn("flex items-start gap-3", isUser && "flex-row-reverse")}>
       <Avatar
         className={cn(
-          "h-8 w-8 mt-0.5 flex items-center justify-center",
-          isUser ? "bg-primary" : "bg-muted"
+          "h-10 w-10 mt-0.5 flex items-center justify-center shadow-xl",
+          isUser ? "bg-primary" : "dark:bg-muted bg-white"
         )}
       >
         {isUser ? (
-          <User className="h-5 w-5 text-primary-foreground" />
-        ) : (
-          <Bot className="h-5 w-5" />
+          <User className="h-6 w-6 text-primary-foreground" />
+        ) : (<>
+          <Image
+            src="/ai.dark.svg"
+            width={32}
+            height={32}
+            className="h-8 w-8 dark:block hidden"
+            alt="AI icon dark"
+          />
+          <Image
+            src="/ai.light.svg"
+            width={32}
+            height={32}
+            className="h-8 w-8 dark:hidden block"
+            alt="AI icon light"
+          />
+          </>
         )}
       </Avatar>
 

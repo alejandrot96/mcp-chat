@@ -60,9 +60,11 @@ export const ModelSelector: FC<ModelSelectorProps> = ({ className }) => {
     <div className="flex flex-col space-y-1">
       <label htmlFor="model-select" className="text-xs text-muted-foreground font-mono hidden">Model:</label>
       <Select value={modelName} onValueChange={handleModelChange}>
-        <SelectTrigger id="model-select" className={`w-[260px] font-mono text-xs flex items-center ${className}`}>
+        <SelectTrigger id="model-select" className={`w-auto font-mono text-xs flex items-center ${className}`}>
           <Cpu className="mr-2 h-3.5 w-3.5" />
-          <SelectValue placeholder="Select model" />
+          <div className="hidden md:block">
+            <SelectValue placeholder="Select model" />
+          </div>
         </SelectTrigger>
         <SelectContent className="z-50">
           {availableModels.map((model) => (

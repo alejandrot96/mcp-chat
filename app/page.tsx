@@ -4,6 +4,7 @@
 
 import type React from "react";
 import { useChat } from "@ai-sdk/react";
+import Image from "next/image";
 
 // Define UsageMetadata interface for token usage tracking
 interface UsageMetadata {
@@ -73,6 +74,18 @@ import { cn } from "@/lib/utils";
 import { ServerConfigDialog } from "@/components/server-config-dialog";
 import { breakdownAtom, isMcpConfigOpenAtom } from "@/services/mcp/atoms";
 import ModelSelector from "@/components/model-selector";
+
+// Helper function to generate unique IDs with fallback for environments where crypto.randomUUID() isn't available
+const generateUniqueId = () => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    // Fallback for environments where randomUUID is not available
+    return Math.random().toString(36).substring(2, 15) +
+           Math.random().toString(36).substring(2, 15) +
+           Date.now().toString(36);
+  }
+};
 
 // Function to format date into a pretty relative time
 const formatRelativeTime = (dateString: string): string => {
@@ -210,7 +223,7 @@ export default function ChatPage() {
   );
 
   // Get AI SDK chat functionality
-  const { messages, status, input, setInput, setMessages, append, stop, data } =
+  const { messages, status, input, setInput, setMessages, append, stop } =
     useChat({
       id: commitHead ?? undefined,
       body: {
@@ -254,7 +267,7 @@ export default function ChatPage() {
         if (userMessageId) {
           // Create an error message object with the more informative message.
           const errorMessage = {
-            id: crypto.randomUUID(), // Unique ID for the error message
+            id: generateUniqueId(),
             content: `Failed to process your request: ${userErrorMessage}`, // Prepend a user-friendly phrase
             role: 'assistant', // Or 'system'
             createdAt: new Date(),
@@ -292,7 +305,7 @@ export default function ChatPage() {
         } else {
            // If userMessageId is not available, just append a general error message at the end
            const generalErrorMessage = {
-            id: crypto.randomUUID(),
+            id: generateUniqueId(),
             content: `Failed to process your request: ${userErrorMessage}`, // Use the informative message here too
             role: 'assistant', // Or 'system'
             createdAt: new Date(),
@@ -342,7 +355,7 @@ export default function ChatPage() {
         }));
 
         const message: Message = {
-          id: crypto.randomUUID(),
+          id: generateUniqueId(),
           content: input,
           role: "user",
           createdAt: new Date(),
@@ -507,11 +520,40 @@ export default function ChatPage() {
     setIsLoading,
   ]);
 
-  const [isToolSidebarOpen, setIsToolSidebarOpen] = useState(true);
+  // Tool sidebar state
+  const [isToolSidebarOpen, setIsToolSidebarOpen] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(true);
 
-  const toggleToolSidebar = () => {
-    setIsToolSidebarOpen(!isToolSidebarOpen);
-  };
+  // Initialize based on screen size and handle resize
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const isMobile = window.innerWidth < 768;
+      setIsMobileView(isMobile);
+
+      // Only set default state on first render
+      if (!isMobile) {
+        setIsToolSidebarOpen(true);
+      }
+    };
+
+    // Set initial state
+    checkScreenSize();
+
+    // Add event listener for screen resizing
+    window.addEventListener('resize', checkScreenSize);
+
+    // Clean up
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  const toggleToolSidebar = useCallback(() => {
+    // Force update state to ensure re-render
+    setIsToolSidebarOpen(prevState => !prevState);
+    // Prevent scrolling when sidebar is open on mobile
+    if (isMobileView) {
+      document.body.style.overflow = !isToolSidebarOpen ? 'hidden' : '';
+    }
+  }, [isMobileView, isToolSidebarOpen]);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -615,28 +657,61 @@ export default function ChatPage() {
 
         {/* Main Chat Content */}
         <div className="flex flex-col flex-1 h-full overflow-x-auto">
-          <header className="p-4 border-b flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="mr-2">
-                <PanelLeftIcon className="h-4 w-4" />
-              </SidebarTrigger>
-              <h1 className="text-xl font-semibold">MCP Chat</h1>
+          <header className="p-4 border-b flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
+            <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger className="mr-2">
+                  <PanelLeftIcon className="h-4 w-4" />
+                </SidebarTrigger>
+                <Image
+                  src="/ai.dark.svg"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 dark:block hidden"
+                  alt="AI icon dark"
+                />
+                <Image
+                  src="/ai.light.svg"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 dark:hidden block"
+                  alt="AI icon light"
+                />
+                <h1 className="text-xl font-semibold">MCP Chat</h1>
+              </div>
+              <div className="flex md:hidden ">
+                 <ModelSelector className=" w-auto h-full mr-1 " />
+                <ThemeToggle />
+                {/* Tools sidebar toggle button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleToolSidebar}
+                  aria-label="Toggle tools sidebar"
+                  className="z-50 relative"
+                >
+                  {isToolSidebarOpen ? <X className="h-4 w-4" /> : <PanelRightIcon className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <ModelSelector className="w-60" />
-              <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleToolSidebar}
-              >
-                {isToolSidebarOpen ? <X className="h-4 w-4" /> : <PanelRightIcon className="h-4 w-4" />}
-              </Button>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <ModelSelector className="hidden md:flex" />
+              <div className="hidden md:flex items-center gap-3">
+                <ThemeToggle />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleToolSidebar}
+                  aria-label="Toggle tools sidebar"
+                >
+                  {isToolSidebarOpen ? <X className="h-4 w-4" /> : <PanelRightIcon className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
           </header>
 
-          <ScrollArea className="flex-1 p-4 space-y-4" ref={scrollAreaRef}>
-            <div className="max-w-xs lg:max-w-3xl mx-auto space-y-4 pb-20">
+          <ScrollArea className="flex-1 p-2 md:p-4 space-y-4" ref={scrollAreaRef}>
+            <div className="max-w-md md:max-w-[80vw] xl:max-w-[65vw] mx-auto space-y-4 pb-10">
               {commitThread.length === 0 &&
               !isLoading &&
               currentCommitChildren.length === 0 ? (
@@ -662,12 +737,12 @@ export default function ChatPage() {
               ) : (
                 commitThread.map((commit, index) => (
                   <div key={`msg-${commit.id}-${index}`}>
-                    <div className="w-full flex items-center justify-center gap-2">
+                    <div className="w-full flex items-center justify-center gap-2 pb-2">
                       <p className="text-xs text-muted-foreground">
                         {commit.author}
                       </p>
                       <p
-                        className="text-xs text-muted-foreground"
+                        className="text-xs text-muted-foreground "
                         suppressHydrationWarning={true}
                       >
                         {formatRelativeTime(commit.date)}
@@ -720,8 +795,10 @@ export default function ChatPage() {
               )}
               {isLoading && <LoadingMessage />}
               {currentCommitChildren.length > 0 && (
-                <ScrollArea className="max-w-3xl whitespace-nowrap rounded-md border">
-                  <div className="flex w-max space-x-4 p-4">
+                <div className="w-[100%] mx-auto">
+
+                <ScrollArea className=" whitespace-nowrap mx-12 rounded-md border">
+                  <div className="flex w-max space-x-4 p-4  ">
                     {currentCommitChildren.map((commit) => {
                       // Determine background color based on commit selection and parent relationship
                       let bgColor = "";
@@ -795,91 +872,69 @@ export default function ChatPage() {
                   </div>
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>
+                </div>
               )}
             </div>
           </ScrollArea>
 
-          <div className="p-4 border-t">
-            <div className="max-w-3xl mx-auto">
-              <div className="flex justify-between items-center mb-2 gap-4">
+          <section className="p-4  border-t">
+            <div className="max-w-md md:max-w-[80vw] xl:max-w-[65vw] mx-auto md:px-12 lg:pb-4">
+              <div className="flex flex-col lg:flex-row w-full gap-4 mb-2">
+                {/* First row - Token info */}
+                <div className="flex flex-col gap-1 text-xs text-muted-foreground w-full lg:w-auto lg:mr-auto">
+                  <div className="flex flex-row items-center justify-between gap-2 overflow-x-auto whitespace-nowrap">
 
-                {/* Simple token counter display */}
-                <div className="flex justify-between items-center mb-2 px-1">
-                  <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-semibold">
-                               {data && data.usage ? (
-                                 <>
-                                   Last: <span className="text-blue-500 dark:text-blue-400">{(data.usage.promptTokens || data.usage.prompt_tokens || 0).toLocaleString()}</span> in + <span className="text-green-600 dark:text-green-400">{(data.usage.completionTokens || data.usage.completion_tokens || 0).toLocaleString()}</span> out = <span className="text-amber-600 dark:text-amber-400">{(data.usage.totalTokens || data.usage.total_tokens || 0).toLocaleString()}</span>
-                                 </>
-                               ) : (
-                                 <>Waiting for token data...</>
-                               )}
-                             </span>
-                             <span className="font-mono">
-                                 {data && data.usage && (
-                                   <>
-                                   Cost: ${(((data.usage.promptTokens || data.usage.prompt_tokens || 0) * 0.00007 + (data.usage.completionTokens || data.usage.completion_tokens || 0) * 0.00014)/1000).toFixed(5)}
-                                 </>
-                               )}
-                             </span>
-                    </div>
-                    <div className="flex items-center justify-between  px-2 py-1 rounded-md">
-                      <span className="font-mono font-semibold">
-                        Total: <span className="text-blue-500 dark:text-blue-400">{totalTokens.prompt.toLocaleString()}</span> in + <span className="text-green-600 dark:text-green-400">{totalTokens.completion.toLocaleString()}</span> out = <span className="text-amber-600 dark:text-amber-400">{totalTokens.total.toLocaleString()}</span>
-                      </span>
-                      <span className="font-mono">
-                        Cost: ${((totalTokens.prompt * 0.00007 + totalTokens.completion * 0.00014)/1000).toFixed(5)}
-                        <span className="ml-1 text-xs opacity-70">({modelName ? modelName.split('/')[0] : 'google'})</span>
-                      </span>
-                    </div>
+                  </div>
+                  <div className="flex flex-row items-center justify-between gap-2 px-2 py-1 rounded-md overflow-x-auto whitespace-nowrap text-xs  font-mono">
+                    Total: <p className="text-blue-500 dark:text-blue-400 inline">{totalTokens.prompt.toLocaleString()}</p> in + <p className="text-green-600 dark:text-green-400 inline">{totalTokens.completion.toLocaleString()}</p> out = <p className="text-amber-600 dark:text-amber-400 inline">{totalTokens.total.toLocaleString()}</p> • Cost: ${((totalTokens.prompt * 0.00007 + totalTokens.completion * 0.00014)/1000).toFixed(5)} <p className="opacity-70 inline">({modelName ? modelName.split('/')[0] : 'google'})</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <ServerConfigDialog />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMcpConfigOpen(true)}
-                  >
-                    <Keybinding>M</Keybinding> MCP
-                  </Button>
-                  {commitThread.length > 0 && (
-                    <>
-                      <Export />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setDialogOpen(true)}
-                      >
-                        <Keybinding>E</Keybinding> Export Chat
-                      </Button>
-                      {!isLoading && (
+
+                {/* Second row - Buttons */}
+                <div className="flex w-full lg:w-auto">
+                  <div className="flex flex-wrap gap-2 w-full">
+                    <ServerConfigDialog />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setMcpConfigOpen(true)}
+                    >
+                      <Keybinding>M</Keybinding> MCP
+                    </Button>
+                    {commitThread.length > 0 && (
+                      <>
+                        <Export />
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            chatRef.current?.clearCommits();
-                          }}
+                          onClick={() => setDialogOpen(true)}
                         >
-                          <Keybinding>N</Keybinding> New Thread
+                          <Keybinding>E</Keybinding> Export Chat
                         </Button>
-                      )}
-                    </>
-                  )}
+                        {!isLoading && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              chatRef.current?.clearCommits();
+                            }}
+                          >
+                            <Keybinding>N</Keybinding> New Thread
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                {/* Removed TokenCounter component */}
-
-
                 <form onSubmit={onSubmit} className="flex gap-2">
                   <Input
                     ref={inputRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="[PRESS TAB] Type a message..."
-                    className="flex-1"
+                    className="flex-1 p-2 xl:p-4 xl:text-base"
                     disabled={isLoading}
                     autoFocus
                   />
@@ -905,13 +960,30 @@ export default function ChatPage() {
               </form>
               </div>
             </div>
-          </div>
+          </section>
         </div>
 
-        {/* Tools Sidebar on the right */}
-        <div className={isToolSidebarOpen ? "block" : "hidden"}>
-          <ToolsSidebar />
-        </div>
+        {/* Tools Sidebar - togglable on all devices */}
+        {isToolSidebarOpen && (
+          <>
+            {/* Mobile backdrop overlay */}
+            {isMobileView && (
+              <div
+                className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                onClick={toggleToolSidebar}
+                aria-hidden="true"
+              />
+            )}
+            <div className={isMobileView ? "fixed right-0 top-0 z-50 h-screen bg-card dark:bg-card shadow-xl" : ""}>
+              <ToolsSidebar
+                className={isMobileView ? "h-full border-l" : ""}
+                onClose={toggleToolSidebar}
+                isMobile={isMobileView}
+                key="tools-sidebar"
+              />
+            </div>
+          </>
+        )}
       </div>
     </SidebarProvider>
   );
