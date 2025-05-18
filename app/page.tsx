@@ -150,9 +150,9 @@ export default function ChatPage() {
   // Utility function to check if an object has usage data
   // This function is unused but kept for future reference
   // const hasUsageData = (obj: unknown): boolean => {
-  //   return obj && 
-  //     (obj.promptTokens || obj.prompt_tokens || 
-  //      obj.completionTokens || obj.completion_tokens || 
+  //   return obj &&
+  //     (obj.promptTokens || obj.prompt_tokens ||
+  //      obj.completionTokens || obj.completion_tokens ||
   //      obj.totalTokens || obj.total_tokens);
   // };
 
@@ -862,7 +862,7 @@ export default function ChatPage() {
                             chatRef.current?.clearCommits();
                           }}
                         >
-                          <Keybinding>C</Keybinding> New Thread
+                          <Keybinding>N</Keybinding> New Thread
                         </Button>
                       )}
                     </>
